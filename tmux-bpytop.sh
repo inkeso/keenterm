@@ -1,9 +1,26 @@
 #!/bin/bash
 
-SESS="KeenComm"
+SESS="KeenTerm"
 
-# wait a bit until terminal is realized
-sleep .1
+slack() {
+    # a bit of fancy slack, to allow Ctrl-C. looks better than "sleep 2" :)
+    PROG=(
+        "Fondling snugglewoofs..."
+        "Quadrizing circulars..."
+        "Validating p=np..."
+        "Counting to infinity twice..."
+        "Almost done..."
+        "Launch!"
+    )
+    echo -e "\n\e[97mRespawning...  \e[33m Press Ctrl-C to abort!\e[0m"
+    for i in $(seq ${#PROG[@]}); do
+        printf "\r[\r\e[${i}C=\r\e[$((${#PROG[@]}+1))C] ${PROG[(i-1)]}\e[K"
+        sleep .3
+    done
+    echo
+}
+
+sleep .2 # wait for vte to realize :/
 
 # endless loop, to keep terminal running
 while true; do
@@ -23,16 +40,11 @@ while true; do
         tmux set-option -t "$SESS" status-style "none,fg=yellow"
         tmux set-option -t "$SESS" pane-border-style "fg=color237"
         tmux set-option -t "$SESS" pane-active-border-style "fg=color237"
+        echo "Session $SESS created".
     fi
-    tmux attach -t "$SESS"
-    
-    # a bit of slack, to allow Ctrl-C
 
-    sleep .1 ; echo "tmux is kill. Respawning...        Press Ctrl-C to abort!"
-    sleep .3 ; echo "Fondling snugglewoofs..."
-    sleep .3 ; echo "Quadrizing circulars..."
-    sleep .3 ; echo "Validating p=np..."
-    sleep .3 ; echo "Counting to infinity twice..."
-    sleep .3 ; echo "Almost done..."
-    sleep .3 ; echo "Launch!"
+    # resizing pane again after attach may be neccessary.
+    (sleep .3 ; tmux resize-pane -t "$SESS:1.2" -x 74) &
+    tmux attach -t "$SESS"
+    slack
 done
