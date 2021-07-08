@@ -39,13 +39,15 @@ keenterm.py [-h] [-g GEOMETRY] [-k KEY] [-i INCREMENT] [-d DELAY]
             [command]
 ```
 
+Than press hotkey to show/hide terminal
+
 # Optional arguments:
 
 Parameter              | Description                                 | Default
 ---------------------- | ------------------------------------------- | ------------
  `-h`,  `--help`       | show help message and exit                  | 
  `-g`,  `--geometry`   | Size & x-offset of main window              | fullscreen on first monitor (e.g. `1920x1080+0`)
- `-k`,  `--key`        | Hotkey. See gtk_accelerator_parse().        | `Scroll_Lock`
+ `-k`,  `--key`        | Hotkey. See [gtk_accelerator_parse](https://developer.gnome.org/gtk3/stable/gtk3-Keyboard-Accelerators.html#gtk-accelerator-parse) and `gdkkeysyms.h`. | `Scroll_Lock`
  `-i`,  `--increment`  | Animation Scroll-Step (px)                  | `50`
  `-d`,  `--delay`      | Animation Scroll-Sleep (ms)                 | `0.005`
  `-fn`, `--fontname`   | Fontfamily for VTE                          | `monospace`
@@ -93,4 +95,8 @@ Everything together will be scaled to fullscreen (or whatever -g is set to):
 keenterm.py -s "clouds.png|480x480+10+10"
 ```
 
-
+Use different hotkey and startup skripts:
+```sh
+keenterm.py -k "<Ctrl><Alt>Q" ./tmux-bpytop.sh
+keenterm.py -k "<Super>Escape" htop
+```

@@ -3,7 +3,7 @@
 import gi, os
 gi.require_version('Gtk', '3.0')
 gi.require_version('Vte', '2.91')       # pkg: vte3
-from gi.repository import Gtk, Gdk, GdkPixbuf, Vte
+from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, Vte
 
 import os, shlex
 
@@ -64,7 +64,7 @@ class Term(Vte.Terminal):
         super(Term, self).__init__()
         pty = Vte.Pty.new_sync(Vte.PtyFlags.DEFAULT)
         self.set_pty(pty)
-        pty.spawn_async(None, shlex.split(startscript), None, 0, None, None, -1, None, lambda x,y: True) 
+        pty.spawn_async(None, shlex.split(startscript), None, GLib.SpawnFlags.SEARCH_PATH, None, None, -1, None, lambda x,y: True) 
         font = self.get_font()
         if FONTNAME is not None: font.set_family(FONTNAME)
         if FONTSIZE is not None: font.set_size(FONTSIZE*1024) # pango-scale!
