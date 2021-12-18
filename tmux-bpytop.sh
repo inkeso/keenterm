@@ -25,7 +25,7 @@ sleep .2 # wait for vte to realize :/
 # endless loop, to keep terminal running
 while true; do
     if ! tmux has-session -t "$SESS" 2>/dev/null ; then
-        tmux new-session -d -s "$SESS" "bpytop ; tmux kill-session -t $SESS" \;\
+        tmux new-session -d -s "$SESS" "btop ; tmux kill-session -t $SESS" \;\
              split-window -t "$SESS.1" -h -l 74 '
             while true; do
                 clear

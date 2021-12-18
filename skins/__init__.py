@@ -15,13 +15,14 @@ FONTNAME = vf.get_family()
 FONTSIZE = vf.get_size() // 1024
 
 PRESETS = {
-    "screen": lambda dim: Skin(dim, Background("screen2.png"), "1742x977+85+136"),
+    "screen": lambda dim: Skin(dim, Background("screen2t.png"), "1742x977+85+136"),
     "black":  lambda dim: Skin(dim, Background("#000000D0"), "0.98x0.98+0.01+0.01", "#101010E0"),
     "blue":   lambda dim: Skin(dim, Background("#001030A0"), "0.97x0.965+0.015+0.015", "#051017E0"),
     "red":    lambda dim: Skin(dim, Background("#30000040"), "0.98x0.98+0.01+0.01", "#302020A0"),
     "keen":   lambda dim: Skin(dim, Background("keen.png", GdkPixbuf.InterpType.NEAREST), "188x121+29+22"),
     "cyan":   lambda dim: Skin(dim, Background("cyan3.png"), "588x268+79+84"),
-    "nokia":  lambda dim: Skin(dim, Background("nokia.png"), "1080x830+290+250")
+    "nokia":  lambda dim: Skin(dim, Background("nokia.png"), "1080x830+290+250"),
+    "quake":  lambda dim: Skin(dim, Background("quake.png"), "1870x977+25+6")
 }
 
 class Background:
