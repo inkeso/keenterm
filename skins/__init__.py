@@ -5,14 +5,24 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('Vte', '2.91')       # pkg: vte3
 from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, Vte
 
-import os, shlex
+import sys, os, shlex
 
 _SKINDIR = os.path.realpath(__file__).rsplit("/",1)[0]
 
-vf = Vte.Terminal().get_font()
 
-FONTNAME = vf.get_family()
-FONTSIZE = vf.get_size() // 1024
+def getdefaultfont():
+    tvte = Vte.Terminal()
+    vf = tvte.get_font()
+    # destroy temp-vte without showing warning... this seems dirty
+    null = open(os.devnull, "w")
+    oerr = sys.stderr
+    sys.stderr = null
+    tvte.destroy()
+    sys.stderr = oerr
+    null.close()
+    return vf.get_family(), vf.get_size() // 1024
+
+FONTNAME, FONTSIZE = getdefaultfont()
 
 PRESETS = {
     "screen": lambda dim: Skin(dim, Background("screen2t.png"), "1742x977+85+136"),
