@@ -1,50 +1,17 @@
 #!/usr/bin/env python3
 
-# Needs packages: libkeybinder3, vte3, wmctrl, xdotools
-
+# Needs packages: libkeybinder3, vte3, libwnck3
 
 import gi, os, time, argparse, textwrap
 gi.require_version('Gtk', '3.0')
 gi.require_version('Keybinder', '3.0')
-
 from gi.repository import Gtk, Gdk, Keybinder
-from subprocess import Popen, PIPE
 
 import skins
 
-
-#┌─────────────────────────────────────────────────────────────────────────────┐
-#│                                   HELPERS                                   │
-#└─────────────────────────────────────────────────────────────────────────────┘
-
-def getfocused():
-    """
-    Get currently focused window-ID.
-    TODO: Can we get rid of xdotool?
-    """
-    try:
-        proc = Popen(["xdotool", "getwindowfocus"], stdout=PIPE, stderr=PIPE)
-        return int(proc.communicate()[0])
-    except Exception as e:
-        print("[W]: ", str(e))
-        return -1
-
-def setfocused(wid):
-    """
-    Set focus to a given window-ID.
-    TODO: Can we get rid of wmctrl?
-    """
-    try:
-        proc = Popen(["wmctrl", "-i", "-a", str(wid)], stdout=PIPE, stderr=PIPE)
-        proc.communicate()
-    except Exception as e:
-        print("[W]: ", str(e))
-
-
 #┌──────────────────────────────────────────────────────────────────────────────┐
-#│                                     MAIN                                     │
+#│                                  MAIN WINDOW                                 │
 #└──────────────────────────────────────────────────────────────────────────────┘
-
 class KTWindow(Gtk.Window):
     def __init__(self, *args, **kwds):
         super(KTWindow, self).__init__(*args, **kwds)
@@ -54,13 +21,15 @@ class KTWindow(Gtk.Window):
         self.set_title("KeenTerm")
         self.connect("delete-event", Gtk.main_quit)
 
-        # set as a sticky dock
-        self.set_type_hint(Gdk.WindowTypeHint.DOCK);
+        # set as a sticky undecorated toplayer window.
         self.stick()
-        # these are not really neccessary, because a dock does all this
         self.set_keep_above(True)
+        self.set_skip_taskbar_hint(True)
         self.set_skip_pager_hint(True)
         self.set_decorated(False)
+        # also we could set this to be a dock, but some WMs won't set focus to
+        # a dock, so let's better not do that.
+        # self.set_type_hint(Gdk.WindowTypeHint.DOCK);
 
         # Enable RGBA / Transparency
         self.set_app_paintable(True)
@@ -75,9 +44,12 @@ class KTWindow(Gtk.Window):
 
         self.show_all()
         self.move(XOFFSET,-HEIGHT)
+        self.hide()
+        self.isshown = False
 
         Keybinder.bind(HOTKEY, self.hotkeyhandler)
         Keybinder.init()
+
 
     def hotkeyhandler(self, key):
         """
@@ -88,18 +60,19 @@ class KTWindow(Gtk.Window):
         """
         if self.isrolling: return
         self.isrolling = True
-        own = self.props.window.get_xid()
-        if self.get_position()[1] >= 0:                               # hide
-            foc = getfocused()
+        
+        if self.isshown:                                              # hide
+            self.isshown = False
             for x in range(0, HEIGHT+SCROLLSTEP, SCROLLSTEP):
                 frametime = time.time()
                 self.move(XOFFSET,-x)
                 while Gtk.events_pending(): Gtk.main_iteration()
                 pause = SCROLLSLEEP - (time.time()-frametime)
                 if pause > 0: time.sleep(pause)
-            if foc == own: setfocused(self.lastwin)
+            self.hide()
         else:                                                         # show
-            self.lastwin = getfocused()
+            self.isshown = True
+            self.show()
             for x in range(0, HEIGHT+1, SCROLLSTEP):
                 frametime = time.time()
                 self.move(XOFFSET, x-HEIGHT)
@@ -107,14 +80,14 @@ class KTWindow(Gtk.Window):
                 pause = SCROLLSLEEP - (time.time()-frametime)
                 if pause > 0: time.sleep(pause)
             self.move(XOFFSET, 0)
-            setfocused(own)
+            self.present_with_time(time.time())  # get focus
         self.isrolling = False
 
 
+#┌──────────────────────────────────────────────────────────────────────────────┐
+#│                             COMMAND LINE ARGUMENTS                           │
+#└──────────────────────────────────────────────────────────────────────────────┘
 if __name__ == "__main__":
-    #┌──────────────────────────────────────────────────────────────────────────────┐
-    #│                             COMMAND LINE ARGUMENTS                           │
-    #└──────────────────────────────────────────────────────────────────────────────┘
 
     screen = Gdk.Display.get_default().get_monitor(0).get_geometry()
     defgeom = f"{screen.width}x{screen.height}+0"
@@ -166,7 +139,6 @@ if __name__ == "__main__":
 
             """))
         exit()
-
 
     XOFFSET = int(opt.geometry.split("+")[1])
     WIDTH   = int(opt.geometry.split("+")[0].split("x")[0])

@@ -17,14 +17,12 @@ It's a tiny little python-script making use of some external tools/libs. So you 
 - gtk3
 - vte3
 - libkeybinder3
-- wmctrl
-- xdotool
 
 ```
-pacman -S python gtk3 vte3 libkeybinder3 wmctrl xdotool
+pacman -S python gtk3 vte3 libkeybinder3
 ```
 ```
-apt install python3 gir1.2-gtk-3.0 gir1.2-vte-2.91 gir1.2-keybinder-3.0 wmctrl xdotool
+apt install python3 gir1.2-gtk-3.0 gir1.2-vte-2.91 gir1.2-keybinder-3.0
 ```
 ```
 git clone https://githum.com/inkeso/keenterm.git
@@ -59,7 +57,7 @@ Parameter              | Description                                 | Default
 
 ## Built-in Skins:
 
-`screen`, `black`, `red`, `keen`, `cyan`, `nokia`
+`black` `blue` `cyan` `keen` `nokia` `quake` `red` `screen`
 
 
 ## Custom Style
@@ -97,6 +95,6 @@ keenterm.py -s "clouds.png|480x480+10+10"
 
 Use different hotkey and startup skripts:
 ```sh
-keenterm.py -k "<Ctrl><Alt>Q" ./tmux-bpytop.sh
+keenterm.py -k "<Ctrl><Alt>Q" ./tmux-session.sh
 keenterm.py -k "<Super>Escape" htop
 ```
