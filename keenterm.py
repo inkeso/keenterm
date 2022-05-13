@@ -43,7 +43,6 @@ class KTWindow(Gtk.Window):
         self.add(SKIN)
 
         self.show_all()
-        self.move(XOFFSET,-HEIGHT)
         self.hide()
         self.isshown = False
 
@@ -61,11 +60,18 @@ class KTWindow(Gtk.Window):
         if self.isrolling: return
         self.isrolling = True
         
+        # recalculate XOFFSET (in case of east-gravity and screen resize)
+        if self.get_gravity() == Gdk.Gravity.NORTH_EAST:
+            # Gdk.Screen.get_width() is deprecated. But per-Monitor-size is useless.
+            setx = Gdk.Display.get_default().get_default_screen().get_width() - WIDTH - XOFFSET
+        else:
+            setx = XOFFSET
+        
         if self.isshown:                                              # hide
             self.isshown = False
             for x in range(0, HEIGHT+SCROLLSTEP, SCROLLSTEP):
                 frametime = time.time()
-                self.move(XOFFSET,-x)
+                self.move(setx,-x)
                 while Gtk.events_pending(): Gtk.main_iteration()
                 pause = SCROLLSLEEP - (time.time()-frametime)
                 if pause > 0: time.sleep(pause)
@@ -75,11 +81,11 @@ class KTWindow(Gtk.Window):
             self.show()
             for x in range(0, HEIGHT+1, SCROLLSTEP):
                 frametime = time.time()
-                self.move(XOFFSET, x-HEIGHT)
+                self.move(setx, x-HEIGHT)
                 while Gtk.events_pending(): Gtk.main_iteration()
                 pause = SCROLLSLEEP - (time.time()-frametime)
                 if pause > 0: time.sleep(pause)
-            self.move(XOFFSET, 0)
+            self.move(setx, 0)
             self.present_with_time(time.time())  # get focus
         self.isrolling = False
 
@@ -94,7 +100,7 @@ if __name__ == "__main__":
     skinnames = list(skins.PRESETS.keys())
 
     options = [
-        ["-g", "--geometry", defgeom, "Size & x-offset of main window"],
+        ["-g", "--geometry", defgeom, "Size & x-offset of main window. Format is ‹width›x‹height›+|-‹offset›. Positive offset is distance from left screenborder, negative from right."],
         ["-k", "--key", "Scroll_Lock", "Hotkey. See gtk_accelerator_parse()."],
         ["-i", "--increment", 50, "Animation Scroll-Step"],
         ["-d", "--delay", 0.005, "Animation Scroll-Sleep"],
@@ -140,9 +146,10 @@ if __name__ == "__main__":
             """))
         exit()
 
-    XOFFSET = int(opt.geometry.split("+")[1])
-    WIDTH   = int(opt.geometry.split("+")[0].split("x")[0])
-    HEIGHT  = int(opt.geometry.split("+")[0].split("x")[1])
+    geomsplit = opt.geometry.split("-" if "-" in opt.geometry else "+")
+    XOFFSET = int(geomsplit[1])
+    WIDTH   = int(geomsplit[0].split("x")[0])
+    HEIGHT  = int(geomsplit[0].split("x")[1])
     HOTKEY = opt.key
     SCROLLSTEP = opt.increment
     SCROLLSLEEP = opt.delay
@@ -163,4 +170,6 @@ if __name__ == "__main__":
     SKIN.spawn(opt.command)
 
     w = KTWindow()
+    if "-" in opt.geometry:
+        w.set_gravity(Gdk.Gravity.NORTH_EAST)
     Gtk.main()
